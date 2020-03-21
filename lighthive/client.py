@@ -22,7 +22,7 @@ class Client:
 
     def __init__(self, nodes=None, keys=None, connect_timeout=3,
                  read_timeout=30, loglevel=logging.ERROR, chain=None):
-        self.nodes = nodes
+        self.nodes = nodes or DEFAULT_NODES
         self.node_list = cycle(nodes or DEFAULT_NODES)
         self.api_type = "condenser_api"
         self.queue = []
