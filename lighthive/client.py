@@ -12,8 +12,9 @@ from .helpers.rc import ResourceCredit
 
 
 DEFAULT_NODES = [
-    "https://api.steemit.com",
-    "https://steemd.minnowsupportproject.org",
+    "https://api.hive.blog",
+    "https://api.hivekings.com",
+    "https://anyx.io",
 ]
 
 
