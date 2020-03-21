@@ -16,7 +16,7 @@ from tests_mockdata import mock_block_25926363, mock_dygp_result, \
 
 
 class TestClient(unittest.TestCase):
-    NODES = ["https://api.steemit.com"]
+    NODES = ["https://api.hivekings.com"]
 
     def setUp(self):
         self.client = Client(nodes=TestClient.NODES)
