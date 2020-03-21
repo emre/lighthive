@@ -12,9 +12,9 @@ Client class is the primary class you will work with.
     client = Client()
 
 
-Appbase nodes support different `api namespaces <https://developers.steem.io/apidefinitions/#apidefinitions-condenser-api>`_.
+Appbase nodes support different `api namespaces <https://developers.hive.io/apidefinitions/#apidefinitions-condenser-api>`_.
 
-Client class uses **condenser_api** as default. Follow the official developer portal's `api definitions <https://developers.steem.io/apidefinitions/>`_
+Client class uses **condenser_api** as default. Follow the official developer portal's `api definitions <https://developers.hive.io/apidefinitions/>`_
 to explore available methods.
 
 Examples
@@ -71,12 +71,13 @@ to choose.
 .. function:: __init__(self, nodes=None, keys=None, connect_timeout=3,
                  read_timeout=30, loglevel=logging.ERROR, chain=None)
 
-   :param nodes: A list of appbase nodes. (Defaults: ``api.steemit.com``, ``appbase.buildteam.io``.)
+   :param nodes: A list of appbase nodes. (Defaults:  "https://api.hive.blog", "https://api.hivekings.com",
+ "https://anyx.io")
    :param keys: A list of private keys.
    :param connect_timeout: Integer. Connect timeout for nodes. (Default:3 seconds.)
    :param read_timeout: Integer. Read timeout for nodes. (Default: 30 seconds.)
    :param loglevel: Integer. (Ex: logging.DEBUG)
-   :param chain: String. The blockhain we're working with. (Default: STEEM)
+   :param chain: String. The blockhain we're working with. (Default: HIVE)
 
 
 See :doc:`/broadcasting` to find out how to broadcast transactions into the blockchain.

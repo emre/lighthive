@@ -2,9 +2,9 @@
 lighthive
 =================================
 
-lighthive is a **light** python client to interact with the STEEM blockchain.
+lighthive is a **light** python client to interact with the HIVE blockchain.
 It's simple and stupid. It doesn't interfere the process between the developer
-and the STEEM node.
+and the HIVE node.
 
 .. figure::  https://steemitimages.com/0x0/https://cdn.steemitimages.com/DQmV9ziht8AJYi3YhqR1gjKT96pCAe6FMiEAD7TC8nE5r13/Screen%20Shot%202018-08-07%20at%207.14.36%20PM.png
    :width: 600
