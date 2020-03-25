@@ -40,8 +40,8 @@ class TransactionListener:
                 if self.end_block and current_block > self.end_block:
                     return
                 if ops:
-                    block_num, ops = self.get_ops(current_block)
-                    for op in ops:
+                    block_num, block_ops = self.get_ops(current_block)
+                    for op in block_ops:
                         yield op
                 else:
                     yield self.get_block(current_block)
