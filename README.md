@@ -1,6 +1,6 @@
 ### lighthive <img src="https://travis-ci.org/emre/lighthive.svg?branch=master">
 
-A light python client to interact with the STEEM blockchain. It's simple and stupid. You ask something, you get something.
+A light python client to interact with the HIVE blockchain. It's simple and stupid. You ask something, you get something.
 
 #### What's supported?
 
@@ -13,7 +13,7 @@ See [lighthive.readthedocs.io](https://lighthive.readthedocs.io/en/latest/).
 
 #### Notes
 
-- You can see the list of api types at [Steem Developers Portal](https://developers.steem.io/apidefinitions/#apidefinitions-condenser-api)
+- You can see the list of api types at [Hive Developers Portal](https://developers.hive.io/apidefinitions/#apidefinitions-condenser-api)
 
 Consider using condenser_api methods until the other apis becomes stable. A warning from the official portal:
 
