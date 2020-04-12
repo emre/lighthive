@@ -11,7 +11,7 @@ account's history, or get followers of account, you may use the helpers module.
 Account helper
 =================================
 
-This class defines an Account in the STEEM blockchain.
+This class defines an Account in the HIVE blockchain.
 
 .. code-block:: python
 
@@ -25,7 +25,7 @@ from the blockchain. Once you initialized the Account instance, you have access 
 Getting account history
 -----------------------------------
 
-With this method, you can traverse entire history of a STEEM account.
+With this method, you can traverse entire history of a HIVE account.
 
 .. function:: history(self, account=None, limit=1000, filter=None, exclude=None,
                         order="desc", only_operation_data=True,
@@ -40,7 +40,7 @@ With this method, you can traverse entire history of a STEEM account.
     :param start_at: (datetime.datetime) Starts after that time to process ops.
     :param stop_at: (datetime.datetime) Stops at that time while processing ops.
 
-account_history is an important call for the STEEM applications. A few use cases:
+account_history is an important call for the HIVE applications. A few use cases:
 
 - Getting incoming delegations
 - Filtering transfers on specific accounts
@@ -48,7 +48,7 @@ account_history is an important call for the STEEM applications. A few use cases
 
 etc.
 
-**Example: Get all incoming STEEM of binance account in the last 7 days**
+**Example: Get all incoming HIVE of binance account in the last 7 days**
 
 .. code-block:: python
 
@@ -62,7 +62,7 @@ etc.
 
     one_week_ago = datetime.datetime.utcnow() -
         datetime.timedelta(days=7)
-    total_steem = 0
+    total_hive = 0
     for op in account.history(
             stop_at=one_week_ago,
             filter=["transfer"]):
@@ -70,9 +70,9 @@ etc.
         if op["to"] != "deepcrypto8":
             continue
 
-        total_steem += Amount(op["amount"]).amount
+        total_hive += Amount(op["amount"]).amount
 
-    print("Total STEEM deposited to Binance", total_steem)
+    print("Total HIVE deposited to Binance", total_hive)
 
 
 Getting account followers
@@ -183,13 +183,13 @@ Default precision is 2. You can set it by passing precision=N parameter.
 Amount helper
 =================================
 
-A simple class to convert "1234.1234 STEEM" kind of values to Decimal.
+A simple class to convert "1234.1234 HIVE" kind of values to Decimal.
 
 .. code-block:: python
 
     from lighthive.helpers.amount import Amount
 
-    amount = Amount("42.5466 STEEM")
+    amount = Amount("42.5466 HIVE")
 
     print(amount.amount)
     print(amount.symbol)
@@ -281,7 +281,7 @@ for an **account_claim** operation:
         'claim_account',
         {
             "creator": "emrebeyler",
-            "fee": "0.000 STEEM",
+            "fee": "0.000 HIVE",
             "extensions": [],
         }
     )
