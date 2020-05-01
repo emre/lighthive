@@ -7,6 +7,7 @@ import requests
 
 from .exceptions import RPCNodeException
 from .broadcast.transaction_builder import TransactionBuilder
+from .broadcast.chains import known_chains
 from .helpers.account import Account
 from .helpers.rc import ResourceCredit
 
@@ -35,12 +36,23 @@ class Client:
         self.set_logger(loglevel)
         self.next_node()
         self.transaction_builder = TransactionBuilder(self)
+        self._hf24_check()
 
     def __getattr__(self, attr):
         def callable(*args, **kwargs):
             return self.request(attr, *args, **kwargs)
 
         return callable
+
+    def _hf24_check(self):
+        # temporary check for the chain ID change on HF24
+        # @todo: remove this after HF24
+        blockchain_version = self(
+            'database_api').get_version()["blockchain_version"].replace(".", "")
+
+        if int(blockchain_version) > 230:
+            self.logger.warning("Overriding CHAIN as HIVE_HF24")
+            self.chain = "HIVE_HF24"
 
     def __call__(self, *args, **kwargs):
         # This is not really thread-safe
@@ -142,7 +154,6 @@ class Client:
         raise Exception("Unexpected response: %s" % response)
 
     def validate_response(self, response):
-        #print(response)
         if 'error' in response:
             # single request error, no batch call.
             raise RPCNodeException(
