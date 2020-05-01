@@ -5,7 +5,7 @@ Broadcasting Transactions
 Since lighthive supports transaction signing out of the box, you only need to
 define the operations you want to broadcast.
 
-A typical transaction on STEEM blockchain consists of these fields:
+A typical transaction on HIVE blockchain consists of these fields:
 
 .. code-block:: javascript
 
@@ -82,12 +82,12 @@ Example: Creating a Post (main Comment)
 
     post = Operation('comment', {
         "parent_author": None,
-        "parent_permlink": "steemit",
+        "parent_permlink": "peakd",
         "author": "emrebeyler",
-        "permlink": "api-steemit-is-down",
-        "title": "api.steemit.com is down",
+        "permlink": "api-hive-is-down",
+        "title": "app.hive.com is down",
         "body": "Body of the post",
-        "json_metadata": json.dumps({"tags": "steemit steem lighthive"})
+        "json_metadata": json.dumps({"tags": "peakd hive lighthive"})
     })
 
     resp =client.broadcast(post)
@@ -122,7 +122,7 @@ Example: Creating a transfer
     op = Operation('transfer', {
                 'from': 'emrebeyler',
                 'to': '<receiver_1>',
-                'amount': '0.001 SBD',
+                'amount': '0.001 HBD',
                 'memo': 'test1!'
             })
 
@@ -148,13 +148,13 @@ It's also possible to bundle multiple operations into one transaction:
         Operation('transfer', {
             'from': 'emrebeyler',
             'to': '<receiver_1>',
-            'amount': '0.001 SBD',
+            'amount': '0.001 HBD',
             'memo': 'test1!'
         }),
         Operation('transfer', {
             'from': 'emrebeyler',
             'to': '<receiver_2>',
-            'amount': '0.001 SBD',
+            'amount': '0.001 HBD',
             'memo': 'test2!'
         }),
 
@@ -163,7 +163,7 @@ It's also possible to bundle multiple operations into one transaction:
     c.broadcast(ops)
 
 
-Example: Using convert function for SBDs
+Example: Using convert function for HBDs
 ---------------------------------------------------------------------------------
 
 .. code-block:: python
@@ -177,7 +177,7 @@ Example: Using convert function for SBDs
     client.broadcast(
         Operation('convert', {
             "owner": "emrebeyler,
-            "amount": "0.500 SBD",
+            "amount": "0.500 HBD",
             "requestid": 1,
         })
     )
@@ -185,7 +185,7 @@ Example: Using convert function for SBDs
 Note: requestid and the owner is unique together.
 
 .. important ::
-    Since, lighthive doesn't introduce any encapsulation on operations, you are responsible to create operation data yourself. To find out the specs for each operation, you may review the block explorers for raw data or the source code of steemd.
+    Since, lighthive doesn't introduce any encapsulation on operations, you are responsible to create operation data yourself. To find out the specs for each operation, you may review the block explorers for raw data or the source code of hiveblocks.
 
 
 
