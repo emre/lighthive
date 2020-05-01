@@ -17,7 +17,7 @@ This class defines an Account in the STEEM blockchain.
 
     from lighthive.client import Client
     c = Client()
-    account = c.get_account('emrebeyler')
+    account = c.account('emrebeyler')
 
 When you execute that script in your REPL, lighthive makes a RPC call to get the account data
 from the blockchain. Once you initialized the Account instance, you have access to these helper methods:
