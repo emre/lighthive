@@ -198,7 +198,6 @@ class TestAccountHelper(unittest.TestCase):
         self.assertEqual(99.0, account.vp())
 
     def test_rc(self):
-
         def match_get_accounts(request):
             method = json.loads(request.text)["method"]
             return method == "condenser_api.get_accounts"
@@ -386,6 +385,33 @@ class TestAmountHelper(unittest.TestCase):
             "precision": 3,
             "nai": "@@000000021"
         }, asset_dict)
+
+
+class TestHF24Override(unittest.TestCase):
+
+    def test_chain_id_before_hf24(self):
+        def match_get_version(request):
+            params = json.loads(request.text)
+            return 'get_version' in params["method"]
+
+        with requests_mock.mock() as m:
+            m.post(TestClient.NODES[0],
+                   json={"result": {"blockchain_version": "0.23.0"}},
+                   additional_matcher=match_get_version)
+            c = Client(nodes=TestClient.NODES)
+            self.assertEqual(c.chain, 'STEEM')
+
+    def test_chain_id_after_hf24(self):
+        def match_get_version(request):
+            params = json.loads(request.text)
+            return 'get_version' in params["method"]
+
+        with requests_mock.mock() as m:
+            m.post(TestClient.NODES[0],
+                   json={"result": {"blockchain_version": "0.24.0"}},
+                   additional_matcher=match_get_version)
+            c = Client(nodes=TestClient.NODES)
+            self.assertEqual(c.chain, 'HIVE_HF24')
 
 
 if __name__ == '__main__':
