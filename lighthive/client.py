@@ -54,6 +54,8 @@ class Client:
             self.logger.warning("Overriding CHAIN as HIVE_HF24")
             self.chain = "HIVE_HF24"
 
+        self.api_type = "condenser_api"
+
     def __call__(self, *args, **kwargs):
         # This is not really thread-safe
         # multi-threaded environments shouldn't share client instances
