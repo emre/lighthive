@@ -7,7 +7,7 @@ known_chains = {
         "vests_symbol": "VESTS",
     },
     "HIVE_HF24": {
-        "chain_id": "0xBEEABODE" + ("0" * 56) ,
+        "chain_id": "beeab0de" + ("0" * 56),
         "prefix": "STM",
         "steem_symbol": "STEEM",
         "sbd_symbol": "SBD",

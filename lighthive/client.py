@@ -47,10 +47,10 @@ class Client:
     def _hf24_check(self):
         # temporary check for the chain ID change on HF24
         # @todo: remove this after HF24
-        blockchain_version = self(
-            'database_api').get_version()["blockchain_version"].replace(".", "")
+        reported_chain_id = self(
+            'database_api').get_version()["chain_id"]
 
-        if int(blockchain_version) > 230:
+        if reported_chain_id.startswith("bee"):
             self.logger.warning("Overriding CHAIN as HIVE_HF24")
             self.chain = "HIVE_HF24"
 
@@ -111,6 +111,7 @@ class Client:
         )
 
         r.raise_for_status()
+        self.logger.info("Response: %s", r.text)
 
         return r.json()
 

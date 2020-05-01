@@ -396,7 +396,7 @@ class TestHF24Override(unittest.TestCase):
 
         with requests_mock.mock() as m:
             m.post(TestClient.NODES[0],
-                   json={"result": {"blockchain_version": "0.23.0"}},
+                   json={"result": {"chain_id": "00000000"}},
                    additional_matcher=match_get_version)
             c = Client(nodes=TestClient.NODES)
             self.assertEqual(c.chain, 'STEEM')
@@ -408,7 +408,7 @@ class TestHF24Override(unittest.TestCase):
 
         with requests_mock.mock() as m:
             m.post(TestClient.NODES[0],
-                   json={"result": {"blockchain_version": "0.24.0"}},
+                   json={"result": {"chain_id": "beeab0de"}},
                    additional_matcher=match_get_version)
             c = Client(nodes=TestClient.NODES)
             self.assertEqual(c.chain, 'HIVE_HF24')
