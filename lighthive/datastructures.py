@@ -1,3 +1,14 @@
-from collections import namedtuple
+class Operation:
 
-Operation = namedtuple('Operation', ['op_id', 'op_data'])
+    def __init__(self, type, value):
+        self.op_type = "%s_operation" % type
+        self.op_value = value
+
+    def to_dict(self):
+        return {
+            "type": self.op_type,
+            "value": self.op_value,
+        }
+
+    def __repr__(self):
+        return self.to_dict()

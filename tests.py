@@ -387,32 +387,5 @@ class TestAmountHelper(unittest.TestCase):
         }, asset_dict)
 
 
-class TestHF24Override(unittest.TestCase):
-
-    def test_chain_id_before_hf24(self):
-        def match_get_version(request):
-            params = json.loads(request.text)
-            return 'get_version' in params["method"]
-
-        with requests_mock.mock() as m:
-            m.post(TestClient.NODES[0],
-                   json={"result": {"chain_id": "00000000"}},
-                   additional_matcher=match_get_version)
-            c = Client(nodes=TestClient.NODES)
-            self.assertEqual(c.chain, 'STEEM')
-
-    def test_chain_id_after_hf24(self):
-        def match_get_version(request):
-            params = json.loads(request.text)
-            return 'get_version' in params["method"]
-
-        with requests_mock.mock() as m:
-            m.post(TestClient.NODES[0],
-                   json={"result": {"chain_id": "beeab0de"}},
-                   additional_matcher=match_get_version)
-            c = Client(nodes=TestClient.NODES)
-            self.assertEqual(c.chain, 'HIVE_HF24')
-
-
 if __name__ == '__main__':
     unittest.main()

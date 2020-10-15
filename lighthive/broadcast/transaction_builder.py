@@ -30,9 +30,10 @@ class TransactionBuilder:
         self.digest = None
 
     def prepare(self):
-        properties = self.client.get_dynamic_global_properties()
+        properties = self.client('database_api').get_dynamic_global_properties()
         ref_block_num = properties["head_block_number"] - 3 & 0xFFFF
-        ref_block = self.client.get_block(properties["head_block_number"] - 2)
+        ref_block = self.client('block_api').get_block(
+            {"block_num": properties["head_block_number"] - 2})["block"]
         ref_block_prefix = struct.unpack_from("<I", unhexlify(
             ref_block["previous"]), 4)[0]
         expiration = (
@@ -113,89 +114,92 @@ class TransactionBuilder:
 
     def broadcast(self, operations, chain=None, dry_run=False):
         preferred_api_type = self.client.api_type
-        if not isinstance(operations, list):
-            operations = [operations, ]
 
-        self.prepare()
+        try:
+            if not isinstance(operations, list):
+                operations = [operations, ]
 
-        op_list = []
-        for operation in operations:
-            op_list.append(
-                [operation.op_id, operation.op_data],
-            )
+            op_list = []
+            for operation in operations:
+                op_list.append(operation.to_dict())
 
-        self.transaction["operations"] = op_list
-        self.transaction["extensions"] = []
-        self.transaction["signatures"] = []
+            self.prepare()
 
-        tx_hex = self.client.get_transaction_hex(self.transaction)
-        self.derive_digest(chain, tx_hex)
+            self.transaction["operations"] = op_list
+            self.transaction["extensions"] = []
+            self.transaction["signatures"] = []
+            tx_hex = self.client('database_api').get_transaction_hex(
+                {"trx": self.transaction})["hex"]
+            self.derive_digest(chain, tx_hex)
 
-        sigs = []
-        for wif in self.client.keys:
-            p = compat_bytes(PrivateKey(wif))
-            i = 0
-            if USE_SECP256K1:
-                ndata = secp256k1.ffi.new("const int *ndata")
-                ndata[0] = 0
-                while True:
-                    ndata[0] += 1
-                    privkey = secp256k1.PrivateKey(p, raw=True)
-                    sig = secp256k1.ffi.new(
-                        'secp256k1_ecdsa_recoverable_signature *')
-                    signed = secp256k1.lib.secp256k1_ecdsa_sign_recoverable(
-                        privkey.ctx, sig, self.digest, privkey.private_key,
-                        secp256k1.ffi.NULL, ndata)
-                    assert signed == 1
-                    signature, i = privkey.ecdsa_recoverable_serialize(sig)
-                    if self._is_canonical(signature):
-                        i += 4
-                        i += 27
-                        break
-            else:
-                cnt = 0
-                sk = ecdsa.SigningKey.from_string(p, curve=ecdsa.SECP256k1)
-                while 1:
-                    cnt += 1
-                    if not cnt % 20:
-                        print("Still searching for a canonical signature. "
-                              "Tried %d times already!" % cnt)
+            sigs = []
+            for wif in self.client.keys:
+                p = compat_bytes(PrivateKey(wif))
+                i = 0
+                if USE_SECP256K1:
+                    ndata = secp256k1.ffi.new("const int *ndata")
+                    ndata[0] = 0
+                    while True:
+                        ndata[0] += 1
+                        privkey = secp256k1.PrivateKey(p, raw=True)
+                        sig = secp256k1.ffi.new(
+                            'secp256k1_ecdsa_recoverable_signature *')
+                        signed = secp256k1.lib.secp256k1_ecdsa_sign_recoverable(
+                            privkey.ctx, sig, self.digest, privkey.private_key,
+                            secp256k1.ffi.NULL, ndata)
+                        assert signed == 1
+                        signature, i = privkey.ecdsa_recoverable_serialize(sig)
+                        if self._is_canonical(signature):
+                            i += 4
+                            i += 27
+                            break
+                else:
+                    cnt = 0
+                    sk = ecdsa.SigningKey.from_string(p, curve=ecdsa.SECP256k1)
+                    while 1:
+                        cnt += 1
+                        if not cnt % 20:
+                            print("Still searching for a canonical signature. "
+                                  "Tried %d times already!" % cnt)
 
-                    k = ecdsa.rfc6979.generate_k(
-                        sk.curve.generator.order(),
-                        sk.privkey.secret_multiplier,
-                        hashlib.sha256,
-                        hashlib.sha256(
-                            self.digest + struct.pack("d", time.time(
-                            ))
-                        ).digest())
+                        k = ecdsa.rfc6979.generate_k(
+                            sk.curve.generator.order(),
+                            sk.privkey.secret_multiplier,
+                            hashlib.sha256,
+                            hashlib.sha256(
+                                self.digest + struct.pack("d", time.time(
+                                ))
+                            ).digest())
 
-                    sigder = sk.sign_digest(
-                        self.digest, sigencode=ecdsa.util.sigencode_der, k=k)
+                        sigder = sk.sign_digest(
+                            self.digest, sigencode=ecdsa.util.sigencode_der, k=k)
 
-                    r, s = ecdsa.util.sigdecode_der(sigder,
-                                                    sk.curve.generator.order())
-                    signature = ecdsa.util.sigencode_string(
-                        r, s, sk.curve.generator.order())
+                        r, s = ecdsa.util.sigdecode_der(sigder,
+                                                        sk.curve.generator.order())
+                        signature = ecdsa.util.sigencode_string(
+                            r, s, sk.curve.generator.order())
 
-                    sigder = array.array('B', sigder)
-                    lenR = sigder[3]
-                    lenS = sigder[5 + lenR]
-                    if lenR is 32 and lenS is 32:
-                        i = self.recover_pubkey_parameter(
-                            self.digest, signature, sk.get_verifying_key())
-                        i += 4
-                        i += 27
-                        break
+                        sigder = array.array('B', sigder)
+                        lenR = sigder[3]
+                        lenS = sigder[5 + lenR]
+                        if lenR is 32 and lenS is 32:
+                            i = self.recover_pubkey_parameter(
+                                self.digest, signature, sk.get_verifying_key())
+                            i += 4
+                            i += 27
+                            break
 
-            sigstr = struct.pack("<B", i)
-            sigstr += signature
-            sigs.append(hexlify(sigstr).decode('ascii'))
+                sigstr = struct.pack("<B", i)
+                sigstr += signature
+                sigs.append(hexlify(sigstr).decode('ascii'))
 
-        self.transaction["signatures"] = sigs
-        self.client.api_type = preferred_api_type
+            self.transaction["signatures"] = sigs
 
-        if dry_run:
-            return self.transaction
+            if dry_run:
+                return self.transaction
+            resp = self.client('network_broadcast_api').broadcast_transaction(
+                {"trx": self.transaction})
 
-        return self.client.broadcast_transaction(self.transaction)
+            return resp
+        finally:
+            self.client.api_type = preferred_api_type

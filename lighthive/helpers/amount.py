@@ -8,6 +8,8 @@ class Amount:
         "SBD": {"precision": 3, "nai": "@@000000013"},
         "STEEM": {"precision": 3, "nai": "@@000000021"},
         "VESTS": {"precision": 6, "nai": "@@000000037"},
+        "HBD": {"precision": 3, "nai": "@@000000013"},
+        "HIVE": {"precision": 3, "nai": "@@000000021"},
     }
 
     @classmethod
