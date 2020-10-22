@@ -128,8 +128,7 @@ class TransactionBuilder:
             self.transaction["operations"] = op_list
             self.transaction["extensions"] = []
             self.transaction["signatures"] = []
-            tx_hex = self.client('database_api').get_transaction_hex(
-                {"trx": self.transaction})["hex"]
+            tx_hex = self.client('condenser_api').get_transaction_hex(self.transaction)
             self.derive_digest(chain, tx_hex)
 
             sigs = []
@@ -194,11 +193,10 @@ class TransactionBuilder:
                 sigs.append(hexlify(sigstr).decode('ascii'))
 
             self.transaction["signatures"] = sigs
-
             if dry_run:
                 return self.transaction
-            resp = self.client('network_broadcast_api').broadcast_transaction(
-                {"trx": self.transaction})
+            resp = self.client('condenser_api').broadcast_transaction(
+                self.transaction)
 
             return resp
         finally:

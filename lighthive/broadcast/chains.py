@@ -1,6 +1,6 @@
 known_chains = {
     "HIVE": {
-        "chain_id": "beeab0de" + ("0" * 56),
+        "chain_id": "beeab0de00000000000000000000000000000000000000000000000000000000"
     },
     "TEST": {
         "chain_id":
