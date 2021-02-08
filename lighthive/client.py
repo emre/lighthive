@@ -13,8 +13,12 @@ from .helpers.rc import ResourceCredit
 
 DEFAULT_NODES = [
     "https://api.hive.blog",
-    "https://api.hivekings.com",
-    "https://anyx.io",
+    "https://hived.emre.sh",
+    "https://api.deathwing.me",
+    "https://rpc.ausbit.dev",
+    "https://api.pharesim.me",
+    "https://rpc.ecency.com",
+    "https://hive-api.arcange.eu",
 ]
 
 
@@ -167,6 +171,10 @@ class Client:
     def broadcast(self, op, dry_run=False):
         return self.transaction_builder.broadcast(
             op, chain=self.chain, dry_run=dry_run)
+
+    def broadcast_sync(self, op, dry_run=False):
+        return self.transaction_builder.broadcast(
+            op, chain=self.chain, dry_run=dry_run, sync=True)
 
     def account(self, username):
         return Account(self, username)

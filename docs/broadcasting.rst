@@ -184,8 +184,47 @@ Example: Using convert function for HBDs
 
 Note: requestid and the owner is unique together.
 
+
+
 .. important ::
     Since, lighthive doesn't introduce any encapsulation on operations, you are responsible to create operation data yourself. To find out the specs for each operation, you may review the block explorers for raw data or the source code of hiveblocks.
+
+Bonus: Broadcasting Synchronously
+---------------------------------------------------------------------------------
+This helper function broadcasts the transaction and waits for it to be processed by the
+network. You can get transaction id as a result.
+
+
+.. code-block:: python
+
+    from lighthive.client import Client
+    from lighthive.datastructures import Operation
+
+
+    c = Client(
+        keys=["<active_key>>",])
+
+    op = Operation('transfer', {
+                'from': '<username>',
+                'to': '<username>>',
+                'amount': '0.001 HIVE',
+                'memo': 'Test'
+            })
+
+    resp = c.broadcast_sync(op)
+
+    print(resp)
+
+Result:
+
+.. code-block:: python
+
+    {
+        'id': 'a0a6655bf839f8fc4aa0fbb4c5779835f662045c',
+        'block_num': 51151610,
+        'trx_num': 6,
+        'expired': False
+    }
 
 
 

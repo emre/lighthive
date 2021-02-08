@@ -112,7 +112,7 @@ class TransactionBuilder:
                 and not (sig[32] & 0x80)
                 and not (sig[32] == 0 and not (sig[33] & 0x80)))
 
-    def broadcast(self, operations, chain=None, dry_run=False):
+    def broadcast(self, operations, chain=None, dry_run=False, sync=False):
         preferred_api_type = self.client.api_type
 
         try:
@@ -195,8 +195,12 @@ class TransactionBuilder:
             self.transaction["signatures"] = sigs
             if dry_run:
                 return self.transaction
-            resp = self.client('condenser_api').broadcast_transaction(
-                self.transaction)
+            if sync:
+                resp = self.client('condenser_api').broadcast_transaction_synchronous(
+                    self.transaction)
+            else:
+                resp = self.client('condenser_api').broadcast_transaction(
+                    self.transaction)
 
             return resp
         finally:
