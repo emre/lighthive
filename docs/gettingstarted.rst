@@ -18,9 +18,10 @@ Client class uses **condenser_api** as default. Follow the official developer po
 to explore available methods.
 
 Automatic Node Selection
-=================================
+""""""""
+
 If you prefer, you can send ``automatic_node_selection`` flag True to the ``Client`` initialization. That way, lighthive
-requests a ``get_dynamic_global_properties`` call to the each defined node, and sorts the nodes by their response time.
+requests a ``get_dynamic_global_properties`` call to the each defined node, and sorts nodes by their response time.
 
 .. code-block:: bash
 
@@ -35,7 +36,6 @@ requests a ``get_dynamic_global_properties`` call to the each defined node, and 
     https://hived.emre.sh: 0.28 [s]
     https://api.hive.blog: 0.49 [s]
     https://techcoderx.com: 0.74 [s]
-
     2021-12-30 15:12:10,203 lighthive    INFO     Automatic node selection took  2.85 seconds.
     2021-12-30 15:12:10,203 lighthive    INFO     Node set as https://api.openhive.network
 
