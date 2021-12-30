@@ -1,6 +1,7 @@
 import logging
 import uuid
 from itertools import cycle
+import asyncio
 
 import backoff
 import requests
@@ -9,6 +10,7 @@ from .exceptions import RPCNodeException
 from .broadcast.transaction_builder import TransactionBuilder
 from .helpers.account import Account
 from .helpers.rc import ResourceCredit
+from .node_picker import sort_nodes_by_response_time
 
 
 DEFAULT_NODES = [
@@ -19,15 +21,19 @@ DEFAULT_NODES = [
     "https://api.pharesim.me",
     "https://rpc.ecency.com",
     "https://hive-api.arcange.eu",
+    "https://api.openhive.network",
+    "https://api.hive.blue",
+    "https://techcoderx.com",
 ]
 
 
 class Client:
 
     def __init__(self, nodes=None, keys=None, connect_timeout=3,
-                 read_timeout=30, loglevel=logging.ERROR, chain=None):
+                 read_timeout=30, loglevel=logging.ERROR, chain=None, automatic_node_selection=False):
         self.nodes = nodes or DEFAULT_NODES
         self.node_list = cycle(nodes or DEFAULT_NODES)
+        self._raw_node_list = nodes or DEFAULT_NODES
         self.api_type = "condenser_api"
         self.queue = []
         self.connect_timeout = connect_timeout
@@ -37,6 +43,8 @@ class Client:
         self.current_node = None
         self.logger = None
         self.set_logger(loglevel)
+        if automatic_node_selection:
+            self._sort_nodes_by_response_time()
         self.next_node()
         self.transaction_builder = TransactionBuilder(self)
 
@@ -54,13 +62,17 @@ class Client:
         return self
 
     def set_logger(self, loglevel):
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger("lighthive")
         handler = logging.StreamHandler()
         formatter = logging.Formatter(
             '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         self.logger.setLevel(loglevel)
+
+    def _sort_nodes_by_response_time(self):
+        _node_list = sort_nodes_by_response_time(self._raw_node_list, self.logger)
+        self.node_list = cycle(_node_list)
 
     def next_node(self):
         self.current_node = next(self.node_list)

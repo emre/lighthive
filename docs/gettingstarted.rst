@@ -17,6 +17,32 @@ Appbase nodes support different `api namespaces <https://developers.hive.io/apid
 Client class uses **condenser_api** as default. Follow the official developer portal's `api definitions <https://developers.hive.io/apidefinitions/>`_
 to explore available methods.
 
+Automatic Node Selection
+=================================
+If you prefer, you can send ``automatic_node_selection`` flag True to the ``Client`` initialization. That way, lighthive
+requests a ``get_dynamic_global_properties`` call to the each defined node, and sorts the nodes by their response time.
+
+.. code-block:: bash
+
+    2021-12-30 15:12:10,203 lighthive    INFO     Measurements:
+    https://api.openhive.network: 0.13 [s]
+    https://rpc.ausbit.dev: 0.14 [s]
+    https://hive-api.arcange.eu: 0.14 [s]
+    https://api.deathwing.me: 0.17 [s]
+    https://rpc.ecency.com: 0.19 [s]
+    https://api.hive.blue: 0.21 [s]
+    https://api.pharesim.me: 0.27 [s]
+    https://hived.emre.sh: 0.28 [s]
+    https://api.hive.blog: 0.49 [s]
+    https://techcoderx.com: 0.74 [s]
+
+    2021-12-30 15:12:10,203 lighthive    INFO     Automatic node selection took  2.85 seconds.
+    2021-12-30 15:12:10,203 lighthive    INFO     Node set as https://api.openhive.network
+
+
+Since it's a time-consuming operation, this is an optional flag.
+
+
 Examples
 """"""""
 
@@ -78,6 +104,7 @@ to choose.
    :param read_timeout: Integer. Read timeout for nodes. (Default: 30 seconds.)
    :param loglevel: Integer. (Ex: logging.DEBUG)
    :param chain: String. The blockhain we're working with. (Default: HIVE)
+   :param automatic_node_selection: Bool. True/False (Default: False)
 
 
 See :doc:`/broadcasting` to find out how to broadcast transactions into the blockchain.
