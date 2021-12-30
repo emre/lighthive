@@ -1,22 +1,24 @@
+import asyncio
 import datetime
 import json
 import unittest
-import pytz
+import unittest.mock
 
+import pytz
 import requests_mock
 
 import lighthive.exceptions
+import lighthive.node_picker
 from lighthive.client import Client
 from lighthive.helpers.account import Account
-from lighthive.helpers.event_listener import EventListener
 from lighthive.helpers.amount import Amount
-
+from lighthive.helpers.event_listener import EventListener
 from tests_mockdata import mock_block_25926363, mock_dygp_result, \
     mock_block_25926364, mock_history, mock_history_max_index
 
 
 class TestClient(unittest.TestCase):
-    NODES = ["https://api.hivekings.com"]
+    NODES = ["https://hived.emre.sh"]
 
     def setUp(self):
         self.client = Client(nodes=TestClient.NODES)
@@ -385,6 +387,24 @@ class TestAmountHelper(unittest.TestCase):
             "precision": 3,
             "nai": "@@000000021"
         }, asset_dict)
+
+
+class NodePickerTests(unittest.TestCase):
+
+    @unittest.mock.patch('lighthive.node_picker.rpc_request')
+    def test_sort_nodes_by_response_time(self, rpc_request_mock):
+
+        test_nodes = ["a", "b", "c"]
+
+        elapsed_mock = unittest.mock.MagicMock()
+        elapsed_mock.total_seconds.side_effect = [5, 10, 2]
+        f = asyncio.Future()
+        f.elapsed = elapsed_mock
+
+        rpc_request_mock.return_value = f
+        nodes = lighthive.node_picker.sort_nodes_by_response_time(test_nodes, unittest.mock.MagicMock())
+
+        self.assertListEqual(nodes, ["c", "a", "b"])
 
 
 if __name__ == '__main__':
