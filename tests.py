@@ -398,10 +398,15 @@ class NodePickerTests(unittest.TestCase):
 
         elapsed_mock = unittest.mock.MagicMock()
         elapsed_mock.total_seconds.side_effect = [5, 10, 2]
-        f = asyncio.Future()
-        f.elapsed = elapsed_mock
 
-        rpc_request_mock.return_value = f
+        def rpc_request(*args, **kwargs):
+            f = asyncio.Future()
+            f.elapsed = elapsed_mock
+            f.url = args[1]
+
+            return f
+
+        rpc_request_mock.side_effect = rpc_request
         nodes = lighthive.node_picker.sort_nodes_by_response_time(test_nodes, unittest.mock.MagicMock())
 
         self.assertListEqual(nodes, ["c", "a", "b"])

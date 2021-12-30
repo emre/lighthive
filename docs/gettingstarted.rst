@@ -26,19 +26,20 @@ That way, lighthive requests a ``get_dynamic_global_properties`` call to the eac
 
 .. code-block:: bash
 
-    2021-12-30 15:12:10,203 lighthive    INFO     Measurements:
-    https://api.openhive.network: 0.13 [s]
-    https://rpc.ausbit.dev: 0.14 [s]
-    https://hive-api.arcange.eu: 0.14 [s]
-    https://api.deathwing.me: 0.17 [s]
-    https://rpc.ecency.com: 0.19 [s]
-    https://api.hive.blue: 0.21 [s]
-    https://api.pharesim.me: 0.27 [s]
-    https://hived.emre.sh: 0.28 [s]
-    https://api.hive.blog: 0.49 [s]
-    https://techcoderx.com: 0.74 [s]
-    2021-12-30 15:12:10,203 lighthive    INFO     Automatic node selection took  2.85 seconds.
-    2021-12-30 15:12:10,203 lighthive    INFO     Node set as https://api.openhive.network
+    2021-12-30 17:20:28,515 lighthive    INFO     Measurements:
+    https://rpc.ausbit.dev: 0.12 [s]
+    https://api.openhive.network: 0.12 [s]
+    https://hive-api.arcange.eu: 0.12 [s]
+    https://hived.emre.sh: 0.14 [s]
+    https://api.deathwing.me: 0.15 [s]
+    https://rpc.ecency.com: 0.16 [s]
+    https://api.hive.blue: 0.19 [s]
+    https://api.pharesim.me: 0.28 [s]
+    https://api.hive.blog: 0.46 [s]
+    https://techcoderx.com: 0.77 [s]
+
+    2021-12-30 17:20:28,516 lighthive    INFO     Automatic node selection took  0.81 seconds.
+    2021-12-30 17:20:28,516 lighthive    INFO     Node set as https://rpc.ausbit.dev
 
 
 Since it's a time-consuming operation, this is an optional flag, and it's default is False.
