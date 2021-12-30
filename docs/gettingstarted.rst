@@ -20,8 +20,9 @@ to explore available methods.
 Automatic Node Selection
 """"""""
 
-If you prefer, you can send ``automatic_node_selection`` flag True to the ``Client`` initialization. That way, lighthive
-requests a ``get_dynamic_global_properties`` call to the each defined node, and sorts nodes by their response time.
+If you prefer, you can pass ``automatic_node_selection`` flag True to the ``Client``. 
+
+That way, lighthive requests a ``get_dynamic_global_properties`` call to the each defined node, and sorts nodes by their response time.
 
 .. code-block:: bash
 
@@ -40,7 +41,7 @@ requests a ``get_dynamic_global_properties`` call to the each defined node, and 
     2021-12-30 15:12:10,203 lighthive    INFO     Node set as https://api.openhive.network
 
 
-Since it's a time-consuming operation, this is an optional flag.
+Since it's a time-consuming operation, this is an optional flag, and it's default is False.
 
 
 Examples
