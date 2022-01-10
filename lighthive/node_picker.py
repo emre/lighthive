@@ -19,7 +19,7 @@ async def rpc_request(client, node, call, params):
         )
 
         if response.status_code != 200:
-            raise Exception("Invalid status code!")
+            raise Exception(f"Invalid status code while checking the node: {node}")
 
         response_json = response.json()
 
@@ -48,7 +48,7 @@ async def compare_nodes(nodes, logger):
 
     for response in responses:
         if isinstance(response, Exception):
-            logger.error(response)
+            logger.info(response)
             measured_time_in_seconds = -1
         else:
             measured_time_in_seconds = response.elapsed.total_seconds()
