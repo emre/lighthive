@@ -411,6 +411,26 @@ class NodePickerTests(unittest.TestCase):
 
         self.assertListEqual(nodes, ["c", "a", "b"])
 
+    @unittest.mock.patch('lighthive.node_picker.rpc_request')
+    def test_sort_nodes_with_negative_result(self, rpc_request_mock):
+
+        test_nodes = ["a", "b", "c", "d"]
+
+        elapsed_mock = unittest.mock.MagicMock()
+        elapsed_mock.total_seconds.side_effect = [2, -1, 5, 9]
+
+        def rpc_request(*args, **kwargs):
+            f = asyncio.Future()
+            f.elapsed = elapsed_mock
+            f.url = args[1]
+
+            return f
+
+        rpc_request_mock.side_effect = rpc_request
+        nodes = lighthive.node_picker.sort_nodes_by_response_time(test_nodes, unittest.mock.MagicMock())
+
+        self.assertListEqual(nodes, ["a", "c", "d"])
+
 
 if __name__ == '__main__':
     unittest.main()

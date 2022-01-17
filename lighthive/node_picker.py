@@ -55,11 +55,16 @@ async def compare_nodes(nodes, logger):
 
         node_performance_results[response.url] = measured_time_in_seconds
 
-    node_performance_results_sorted = OrderedDict(sorted(node_performance_results.items(), key=lambda x: x[1]))
     measurements_in_str = ""
-    for node, time_elapsed in node_performance_results_sorted.items():
+    for node, time_elapsed in node_performance_results.items():
         measurements_in_str += f"{node}: {time_elapsed:.2f} [s]\n"
     logger.info("Measurements: \n%s", measurements_in_str)
+
+    # remove the nodes can't handle the request
+    node_performance_results = {k: v for k, v in node_performance_results.items() if v != -1}
+
+    # sort the nodes by response time
+    node_performance_results_sorted = OrderedDict(sorted(node_performance_results.items(), key=lambda x: x[1]))
 
     return list(node_performance_results_sorted.keys())
 
