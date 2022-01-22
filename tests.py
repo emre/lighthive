@@ -366,9 +366,9 @@ class TestAmountHelper(unittest.TestCase):
         self.client = Client(nodes=TestClient.NODES)
 
     def test_standard_input(self):
-        amount = Amount('1.942 SBD')
+        amount = Amount('1.942 HBD')
         self.assertEqual(float(1.942), float(amount.amount))
-        self.assertEqual('SBD', amount.symbol)
+        self.assertEqual('HBD', amount.symbol)
 
     def test_asset_dict_input(self):
         amount = Amount.from_asset({
@@ -380,7 +380,7 @@ class TestAmountHelper(unittest.TestCase):
         self.assertEqual('VESTS', amount.symbol)
 
     def test_asset_dict_output(self):
-        amount = Amount('0.010 STEEM')
+        amount = Amount('0.010 HIVE')
         asset_dict = amount.asset
         self.assertEqual({
             "amount": "10",
