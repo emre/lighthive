@@ -70,10 +70,18 @@ async def compare_nodes(nodes, logger):
 
 
 def sort_nodes_by_response_time(nodes, logger):
+    local_loop = False
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        local_loop = True
     start_time = time.time()
-    loop = asyncio.get_event_loop()
     nodes = loop.run_until_complete(compare_nodes(nodes, logger))
     total_time_elapsed = time.time() - start_time
     logger.info(f"Automatic node selection took  {total_time_elapsed:.2f} seconds.")
+
+    if local_loop:
+        loop.close()
 
     return nodes
