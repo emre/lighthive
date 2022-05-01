@@ -5,6 +5,7 @@ import asyncio
 
 import backoff
 import requests
+from cachetools import TTLCache
 
 from .exceptions import RPCNodeException
 from .broadcast.transaction_builder import TransactionBuilder
@@ -29,8 +30,12 @@ DEFAULT_NODES = [
 
 class Client:
 
+    backoff_mode = backoff.expo
+    backoff_max_tries = 5
+
     def __init__(self, nodes=None, keys=None, connect_timeout=3,
-                 read_timeout=30, loglevel=logging.ERROR, chain=None, automatic_node_selection=False):
+                 read_timeout=30, loglevel=logging.ERROR, chain=None, automatic_node_selection=False,
+                 load_balance_nodes=False, circuit_breaker=False, circuit_breaker_ttl=3600):
         self.nodes = nodes or DEFAULT_NODES
         self.node_list = cycle(nodes or DEFAULT_NODES)
         self._raw_node_list = nodes or DEFAULT_NODES
@@ -43,6 +48,11 @@ class Client:
         self.current_node = None
         self.logger = None
         self.set_logger(loglevel)
+        self.load_balance_nodes = load_balance_nodes
+        self.circuit_breaker = circuit_breaker
+        self.circuit_breaker_ttl = circuit_breaker_ttl
+        self.circuit_breaker_cache = TTLCache(maxsize=len(nodes), ttl=circuit_breaker_ttl)
+        self.circuit_breaker_cache['https://hived.emre.sh'] = True
         if automatic_node_selection:
             self._sort_nodes_by_response_time()
         self.next_node()
@@ -75,7 +85,11 @@ class Client:
         self.node_list = cycle(_node_list)
 
     def next_node(self):
-        self.current_node = next(self.node_list)
+        if self.circuit_breaker:
+            self.node_list = cycle(set(self._raw_node_list) - self.circuit_breaker_cache.keys())
+            self.current_node = next(self.node_list)
+        else:
+            self.current_node = next(self.node_list)
         self.logger.info("Node set as %s", self.current_node)
 
     def pick_id_for_request(self):
@@ -100,10 +114,10 @@ class Client:
 
         return data
 
-    @backoff.on_exception(backoff.expo,
+    @backoff.on_exception(backoff_mode,
                           (requests.exceptions.Timeout,
                            requests.exceptions.RequestException),
-                          max_tries=5)
+                          max_tries=backoff_max_tries)
     def _send_request(self, url, request_data, timeout):
         self.logger.info("Sending request: %s", request_data)
         r = requests.post(
@@ -136,9 +150,16 @@ class Client:
                 request_data,
                 (self.connect_timeout, self.read_timeout),
             )
+            if self.load_balance_nodes:
+                self.next_node()
         except requests.exceptions.RequestException as e:
             self.logger.error(e)
             num_retries = kwargs.get("num_retries", 1)
+
+            if self.circuit_breaker:
+                self.circuit_breaker_cache[self.current_node] = True
+                self.logger.info("Ignoring node %s for %d seconds: %s, %s",
+                                 self.current_node, self.circuit_breaker_ttl, args, kwargs)
 
             if num_retries >= len(self.nodes):
                 raise e
