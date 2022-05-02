@@ -1,7 +1,6 @@
 import logging
 import uuid
-from itertools import cycle
-import asyncio
+from collections import deque
 
 import backoff
 import requests
@@ -37,8 +36,8 @@ class Client:
                  read_timeout=30, loglevel=logging.ERROR, chain=None, automatic_node_selection=False,
                  load_balance_nodes=False, circuit_breaker=False, circuit_breaker_ttl=3600):
         self.nodes = nodes or DEFAULT_NODES
-        self.node_list = cycle(nodes or DEFAULT_NODES)
-        self._raw_node_list = nodes or DEFAULT_NODES
+        self.node_list = deque(nodes or DEFAULT_NODES)
+        self._raw_node_list = deque(nodes or DEFAULT_NODES)
         self.api_type = "condenser_api"
         self.queue = []
         self.connect_timeout = connect_timeout
@@ -52,7 +51,6 @@ class Client:
         self.circuit_breaker = circuit_breaker
         self.circuit_breaker_ttl = circuit_breaker_ttl
         self.circuit_breaker_cache = TTLCache(maxsize=len(self._raw_node_list), ttl=circuit_breaker_ttl)
-        self.circuit_breaker_cache['https://hived.emre.sh'] = True
         if automatic_node_selection:
             self._sort_nodes_by_response_time()
         self.next_node()
@@ -82,14 +80,17 @@ class Client:
 
     def _sort_nodes_by_response_time(self):
         _node_list = sort_nodes_by_response_time(self._raw_node_list, self.logger)
-        self.node_list = cycle(_node_list)
+        self.node_list = deque(_node_list)
 
     def next_node(self):
         if self.circuit_breaker:
-            self.node_list = cycle(set(self._raw_node_list) - self.circuit_breaker_cache.keys())
-            self.current_node = next(self.node_list)
+            self._raw_node_list.rotate()
+            cache_keys = self.circuit_breaker_cache.keys()
+            self.node_list = deque(node for node in self._raw_node_list
+                                   if node not in cache_keys)
         else:
-            self.current_node = next(self.node_list)
+            self.node_list.rotate()
+        self.current_node = self.node_list[0]
         self.logger.info("Node set as %s", self.current_node)
 
     def pick_id_for_request(self):
