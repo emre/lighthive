@@ -50,7 +50,8 @@ class Client:
         self.load_balance_nodes = load_balance_nodes
         self.circuit_breaker = circuit_breaker
         self.circuit_breaker_ttl = circuit_breaker_ttl
-        self.circuit_breaker_cache = TTLCache(maxsize=len(self._raw_node_list), ttl=circuit_breaker_ttl)
+        # The max size of the node ban cache is num_nodes - 1 to ensure there will always be one node available
+        self.circuit_breaker_cache = TTLCache(maxsize=len(self._raw_node_list)-1, ttl=circuit_breaker_ttl)
         if automatic_node_selection:
             self._sort_nodes_by_response_time()
         self.next_node()
