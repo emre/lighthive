@@ -26,11 +26,11 @@ DEFAULT_NODES = [
     "https://techcoderx.com",
 ]
 
+backoff_mode = backoff.expo
+backoff_max_tries = 5
+
 
 class Client:
-
-    backoff_mode = backoff.expo
-    backoff_max_tries = 5
 
     def __init__(self, nodes=None, keys=None, connect_timeout=3,
                  read_timeout=30, loglevel=logging.ERROR, chain=None, automatic_node_selection=False,
@@ -147,13 +147,13 @@ class Client:
             return
 
         try:
+            if self.load_balance_nodes:
+                self.next_node()
             response = self._send_request(
                 self.current_node,
                 request_data,
                 (self.connect_timeout, self.read_timeout),
             )
-            if self.load_balance_nodes:
-                self.next_node()
         except requests.exceptions.RequestException as e:
             self.logger.error(e)
             num_retries = kwargs.get("num_retries", 1)
