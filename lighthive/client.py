@@ -26,14 +26,12 @@ DEFAULT_NODES = [
     "https://techcoderx.com",
 ]
 
-backoff_mode = backoff.expo
-backoff_max_tries = 5
-
 
 class Client:
 
     def __init__(self, nodes=None, keys=None, connect_timeout=3,
                  read_timeout=30, loglevel=logging.ERROR, chain=None, automatic_node_selection=False,
+                 backoff_mode=backoff.expo, backoff_max_tries=5,
                  load_balance_nodes=False, circuit_breaker=False, circuit_breaker_ttl=3600):
         self.nodes = nodes or DEFAULT_NODES
         self.node_list = deque(nodes or DEFAULT_NODES)
@@ -47,6 +45,8 @@ class Client:
         self.current_node = None
         self.logger = None
         self.set_logger(loglevel)
+        self.backoff_mode = backoff_mode
+        self.backoff_max_tries = backoff_max_tries
         self.load_balance_nodes = load_balance_nodes
         self.circuit_breaker = circuit_breaker
         self.circuit_breaker_ttl = circuit_breaker_ttl
@@ -116,22 +116,25 @@ class Client:
 
         return data
 
-    @backoff.on_exception(backoff_mode,
-                          (requests.exceptions.Timeout,
-                           requests.exceptions.RequestException),
-                          max_tries=backoff_max_tries)
     def _send_request(self, url, request_data, timeout):
-        self.logger.info("Sending request: %s", request_data)
-        r = requests.post(
-            url,
-            json=request_data,
-            timeout=timeout,
-        )
+        @backoff.on_exception(self.backoff_mode,
+                              (requests.exceptions.Timeout,
+                               requests.exceptions.RequestException),
+                              max_tries=self.backoff_max_tries)
+        def _req():
+            self.logger.info("Sending request: %s", request_data)
+            r = requests.post(
+                url,
+                json=request_data,
+                timeout=timeout,
+            )
 
-        r.raise_for_status()
-        self.logger.info("Response: %s", r.text)
+            r.raise_for_status()
+            self.logger.info("Response: %s", r.text)
 
-        return r.json()
+            return r.json()
+
+        return _req()
 
     def request(self, *args, **kwargs):
         batch_data = kwargs.get("batch_data")
