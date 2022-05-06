@@ -33,7 +33,6 @@ class Client:
                  read_timeout=30, loglevel=logging.ERROR, chain=None, automatic_node_selection=False,
                  backoff_mode=backoff.expo, backoff_max_tries=5,
                  load_balance_nodes=False, circuit_breaker=False, circuit_breaker_ttl=3600):
-        self.nodes = nodes or DEFAULT_NODES
         self.node_list = deque(nodes or DEFAULT_NODES)
         self._raw_node_list = deque(nodes or DEFAULT_NODES)
         self.api_type = "condenser_api"
@@ -163,15 +162,16 @@ class Client:
 
             if self.circuit_breaker:
                 self.circuit_breaker_cache[self.current_node] = True
-                self.logger.info("Ignoring node %s for %d seconds: %s, %s",
+                self.logger.warn("Ignoring node %s for %d seconds: %s, %s",
                                  self.current_node, self.circuit_breaker_ttl, args, kwargs)
 
-            if num_retries >= len(self.nodes):
+            if num_retries >= len(self._raw_node_list):
                 raise e
 
             kwargs.update({"num_retries": num_retries + 1})
-            self.logger.info("Retrying in another node: %s, %s", args, kwargs)
-            self.next_node()
+            if not self.load_balance_nodes:
+                self.logger.warn("Retrying in another node: %s, %s", args, kwargs)
+                self.next_node()
 
             return self.request(*args, **kwargs)
 
