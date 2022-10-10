@@ -1,10 +1,10 @@
 import logging
 import uuid
-from itertools import cycle
-import asyncio
+from collections import deque
 
 import backoff
 import requests
+from cachetools import TTLCache
 
 from .exceptions import RPCNodeException
 from .broadcast.transaction_builder import TransactionBuilder
@@ -30,10 +30,11 @@ DEFAULT_NODES = [
 class Client:
 
     def __init__(self, nodes=None, keys=None, connect_timeout=3,
-                 read_timeout=30, loglevel=logging.ERROR, chain=None, automatic_node_selection=False):
-        self.nodes = nodes or DEFAULT_NODES
-        self.node_list = cycle(nodes or DEFAULT_NODES)
-        self._raw_node_list = nodes or DEFAULT_NODES
+                 read_timeout=30, loglevel=logging.ERROR, chain=None, automatic_node_selection=False,
+                 backoff_mode=backoff.expo, backoff_max_tries=5,
+                 load_balance_nodes=False, circuit_breaker=False, circuit_breaker_ttl=3600):
+        self.node_list = deque(nodes or DEFAULT_NODES)
+        self._raw_node_list = deque(nodes or DEFAULT_NODES)
         self.api_type = "condenser_api"
         self.queue = []
         self.connect_timeout = connect_timeout
@@ -43,6 +44,13 @@ class Client:
         self.current_node = None
         self.logger = None
         self.set_logger(loglevel)
+        self.backoff_mode = backoff_mode
+        self.backoff_max_tries = backoff_max_tries
+        self.load_balance_nodes = load_balance_nodes
+        self.circuit_breaker = circuit_breaker
+        self.circuit_breaker_ttl = circuit_breaker_ttl
+        # The max size of the node ban cache is num_nodes - 1 to ensure there will always be one node available
+        self.circuit_breaker_cache = TTLCache(maxsize=len(self._raw_node_list)-1, ttl=circuit_breaker_ttl)
         if automatic_node_selection:
             self._sort_nodes_by_response_time()
         self.next_node()
@@ -72,10 +80,17 @@ class Client:
 
     def _sort_nodes_by_response_time(self):
         _node_list = sort_nodes_by_response_time(self._raw_node_list, self.logger)
-        self.node_list = cycle(_node_list)
+        self.node_list = deque(_node_list)
 
     def next_node(self):
-        self.current_node = next(self.node_list)
+        if self.circuit_breaker:
+            self._raw_node_list.rotate()
+            cache_keys = self.circuit_breaker_cache.keys()
+            self.node_list = deque(node for node in self._raw_node_list
+                                   if node not in cache_keys)
+        else:
+            self.node_list.rotate()
+        self.current_node = self.node_list[0]
         self.logger.info("Node set as %s", self.current_node)
 
     def pick_id_for_request(self):
@@ -100,22 +115,25 @@ class Client:
 
         return data
 
-    @backoff.on_exception(backoff.expo,
-                          (requests.exceptions.Timeout,
-                           requests.exceptions.RequestException),
-                          max_tries=5)
     def _send_request(self, url, request_data, timeout):
-        self.logger.info("Sending request: %s", request_data)
-        r = requests.post(
-            url,
-            json=request_data,
-            timeout=timeout,
-        )
+        @backoff.on_exception(self.backoff_mode,
+                              (requests.exceptions.Timeout,
+                               requests.exceptions.RequestException),
+                              max_tries=self.backoff_max_tries)
+        def _req():
+            self.logger.info("Sending request: %s", request_data)
+            r = requests.post(
+                url,
+                json=request_data,
+                timeout=timeout,
+            )
 
-        r.raise_for_status()
-        self.logger.info("Response: %s", r.text)
+            r.raise_for_status()
+            self.logger.info("Response: %s", r.text)
 
-        return r.json()
+            return r.json()
+
+        return _req()
 
     def request(self, *args, **kwargs):
         batch_data = kwargs.get("batch_data")
@@ -131,6 +149,8 @@ class Client:
             return
 
         try:
+            if self.load_balance_nodes:
+                self.next_node()
             response = self._send_request(
                 self.current_node,
                 request_data,
@@ -140,12 +160,18 @@ class Client:
             self.logger.error(e)
             num_retries = kwargs.get("num_retries", 1)
 
-            if num_retries >= len(self.nodes):
+            if self.circuit_breaker:
+                self.circuit_breaker_cache[self.current_node] = True
+                self.logger.warn("Ignoring node %s for %d seconds: %s, %s",
+                                 self.current_node, self.circuit_breaker_ttl, args, kwargs)
+
+            if num_retries >= len(self._raw_node_list):
                 raise e
 
             kwargs.update({"num_retries": num_retries + 1})
-            self.logger.info("Retrying in another node: %s, %s", args, kwargs)
-            self.next_node()
+            if not self.load_balance_nodes:
+                self.logger.warn("Retrying in another node: %s, %s", args, kwargs)
+                self.next_node()
 
             return self.request(*args, **kwargs)
 
