@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='lighthive',
-    version='0.4.0a2',
+    version='0.4.0',
     packages=find_packages('.'),
     url='http://github.com/emre/lighthive',
     license='MIT',
