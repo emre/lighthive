@@ -60,19 +60,17 @@ etc.
     client = Client()
     account = client.account('deepcrypto8')
 
-    one_week_ago = datetime.datetime.utcnow() -
-        datetime.timedelta(days=7)
+    one_week_ago = datetime.datetime.utcnow() - datetime.timedelta(days=7)
     total_hive = 0
     for op in account.history(
             stop_at=one_week_ago,
-            filter=["transfer"]):
-
+            filter=["transfer_operation"]):
         if op["to"] != "deepcrypto8":
             continue
+        total_hive += Amount.from_asset(op["amount"]).amount
 
-        total_hive += Amount(op["amount"]).amount
+    print("Total HIVE transfers received", total_hive)
 
-    print("Total HIVE deposited to Binance", total_hive)
 
 
 Getting account followers

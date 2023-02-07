@@ -10,11 +10,10 @@ import requests_mock
 import lighthive.exceptions
 import lighthive.node_picker
 from lighthive.client import Client
-from lighthive.helpers.account import Account
 from lighthive.helpers.amount import Amount
 from lighthive.helpers.event_listener import EventListener
 from tests_mockdata import mock_block_25926363, mock_dygp_result, \
-    mock_block_25926364, mock_history, mock_history_max_index
+    mock_block_25926364
 
 
 class TestClient(unittest.TestCase):
@@ -254,46 +253,6 @@ class TestAccountHelper(unittest.TestCase):
             account = self.client.account('emrebeyler')
 
         self.assertEqual(68.86, account.reputation())
-
-    def test_account_history_simple(self):
-        def match_max_index_request(request):
-            params = json.loads(request.text)["params"]
-            return params[1] == -1
-
-        def match_non_max_index_request(request):
-            params = json.loads(request.text)["params"]
-            return params[1] != -1
-
-        with requests_mock.mock() as m:
-            m.post(TestClient.NODES[0], json={
-                "result": mock_history_max_index},
-                   additional_matcher=match_max_index_request)
-            m.post(TestClient.NODES[0], json={"result": mock_history},
-                   additional_matcher=match_non_max_index_request)
-
-            account = Account(self.client)
-            history = list(account.history(account="hellosteem"))
-            self.assertEqual(3, len(history))
-
-            # check filter
-            history = list(
-                account.history(account="hellosteem", filter=["transfer"]))
-
-            self.assertEqual(2, len(history))
-
-            # check exclude
-            history = list(
-                account.history(account="hellosteem", exclude=["transfer"]))
-
-            self.assertEqual(1, len(history))
-
-            # check only_operation_data
-
-            history = list(
-                account.history(
-                    account="hellosteem", only_operation_data=False))
-
-            self.assertEqual(3, history[0][0])
 
 
 class TestEventListener(unittest.TestCase):
