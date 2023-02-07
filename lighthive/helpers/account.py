@@ -39,10 +39,16 @@ class Account:
         if not exclude:
             exclude = []
         order = -1 if order == "desc" else 1
-
-        history = self.client.get_account_history(account, index, limit)
+        api_type = self.client.api_type
+        try:
+            history = self.client('account_history_api').get_account_history({
+                "account": account,
+                "start": index,
+                "limit": limit,
+            }).get("history", [])
+        finally:
+            self.client.api_type = api_type
         for transaction in history[::order]:
-
             created_at = parse(transaction[1]["timestamp"])
             if start_at and order == -1 and created_at > start_at:
                 continue
@@ -56,7 +62,7 @@ class Account:
             if stop_at and order != -1 and created_at > stop_at:
                 raise StopOuterIteration
 
-            op_type, op_value = transaction[1]["op"]
+            op_type, op_value = transaction[1]["op"]["type"], transaction[1]["op"]["value"]
             if op_type in exclude:
                 continue
 
@@ -74,10 +80,20 @@ class Account:
 
         # @todo: this can be faster with batch calls.
         # consider a way to implement it.
-        max_index = self.client.get_account_history(account, -1, 0)[0][0]
-        if not max_index:
-            return
+        api_type = self.client.api_type
+        try:
+            account_history_result = self.client('account_history_api').get_account_history({
+                "account": account,
+                "start": -1,
+                "limit": 1
+            }).get("history", [])
+        finally:
+            self.client.api_type = api_type
 
+        if not account_history_result:
+            return None
+
+        max_index = account_history_result[0][0]
         if order == "desc":
             # Reverse history:
             # Loop until we process all ops

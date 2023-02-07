@@ -1,37 +1,4 @@
 # flake8: noqa
-mock_history_max_index = [[3, {
-    'trx_id': '0000000000000000000000000000000000000000', 'block': 25641925,
-    'trx_in_block': 4294967295, 'op_in_trx': 0, 'virtual_op': 7,
-    'timestamp': '2018-09-03T17:24:48', 'op': ['fill_vesting_withdraw',
-                                               {'from_account': 'hellosteem',
-                                                'to_account': 'hellosteem',
-                                                'withdrawn': '187.37083 VESTS',
-                                                'deposited': '0.092 STEEM'}]}]]
-
-mock_history = [[1,
-                 {'trx_id': '985bb048e2068cdb311829ad3d76f4dc2947811a',
-                  'block': 25153549, 'trx_in_block': 1, 'op_in_trx': 0,
-                  'virtual_op': 0, 'timestamp': '2018-08-17T18:12:57',
-                  'op': ['transfer',
-                         {'from': 'hellosteem', 'to': 'sekhmet',
-                          'amount': '0.001 STEEM', 'memo': ''}]}],
-                [2,
-                 {'trx_id': 'bb1b6ddf13bcffe5bba8d55c3c37a5c672ff7309',
-                  'block': 25153549, 'trx_in_block': 0, 'op_in_trx': 0,
-                  'virtual_op': 0, 'timestamp': '2018-08-17T18:12:57',
-                  'op': ['limit_order_create',
-                         {'owner': 'hellosteem', 'orderid': 1534529209,
-                          'amount_to_sell': '0.100 STEEM',
-                          'min_to_receive': '100.000 SBD',
-                          'fill_or_kill': False,
-                          'expiration': '1969-12-31T23:59:59'}]}],
-                [3,
-                 {'trx_id': '851c9a4ec9a32855b9981ea6b97c7911abaf8996',
-                  'block': 25153418, 'trx_in_block': 0, 'op_in_trx': 0,
-                  'virtual_op': 0, 'timestamp': '2018-08-17T18:06:24',
-                  'op': ['transfer',
-                         {'from': 'hellosteem', 'to': 'fabien',
-                          'amount': '0.001 STEEM', 'memo': 'Test'}]}]]
 
 mock_block_25926363 = {'jsonrpc': '2.0', 'result': [
     {'trx_id': '0aeacf3dc2febe6e869e5ba7269ca005917b9737',
