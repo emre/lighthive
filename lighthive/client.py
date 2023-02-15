@@ -9,7 +9,6 @@ from cachetools import TTLCache
 from .exceptions import RPCNodeException
 from .broadcast.transaction_builder import TransactionBuilder
 from .helpers.account import Account
-from .helpers.rc import ResourceCredit
 from .node_picker import sort_nodes_by_response_time
 
 
@@ -18,12 +17,11 @@ DEFAULT_NODES = [
     "https://hived.emre.sh",
     "https://api.deathwing.me",
     "https://rpc.ausbit.dev",
-    "https://api.pharesim.me",
     "https://rpc.ecency.com",
     "https://hive-api.arcange.eu",
     "https://api.openhive.network",
-    "https://api.hive.blue",
     "https://techcoderx.com",
+    "https://rpc.mahdiyari.info",
 ]
 
 

@@ -25,6 +25,17 @@ from the blockchain. Once you initialized the Account instance, you have access 
 Getting account history
 -----------------------------------
 
+.. important :: With version `0.4.1`, we have started using ``account_history_api.account_history``,
+  instead of ``condenser_api.account_history``. When you pass operation name into filter and exclude parameters,
+  you need to add an `_operation` suffix to the operation name.
+
+  Example:
+    - Before: ``transfer``
+    - After: ``transfer_operation``
+
+
+Beofre:
+
 With this method, you can traverse entire history of a HIVE account.
 
 .. function:: history(self, account=None, limit=1000, filter=None, exclude=None,
@@ -43,12 +54,14 @@ With this method, you can traverse entire history of a HIVE account.
 account_history is an important call for the HIVE applications. A few use cases:
 
 - Getting incoming delegations
-- Filtering transfers on specific accounts
+- Filtering transfers on spe`cific accounts
 - Getting author, curation rewards
 
 etc.
 
 **Example: Get all incoming HIVE of binance account in the last 7 days**
+
+
 
 .. code-block:: python
 
@@ -257,32 +270,3 @@ EventListener class also has
 - end_block
 
 params that you can limit the streaming process into specific blocks.
-
-
-ResourceCredits Helper
-=================================
-
-ResourceCredits class has a simple helper function to get RC costs on specific
-operations.
-
-For example, if you want to learn about how much resource credit will be exhausted
-for an **account_claim** operation:
-
-.. code-block:: python
-
-    from lighthive.client import Client
-    from lighthive.datastructures import Operation
-
-    client = Client(keys=[<your_active_key>])
-
-    op = Operation(
-        'claim_account',
-        {
-            "creator": "emrebeyler",
-            "fee": "0.000 HIVE",
-            "extensions": [],
-        }
-    )
-
-    print(client.rc().get_cost(op))
-
