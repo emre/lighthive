@@ -1,5 +1,5 @@
 import logging
-import uuid
+import random
 from collections import deque
 
 import backoff
@@ -92,7 +92,7 @@ class Client:
         self.logger.info("Node set as %s", self.current_node)
 
     def pick_id_for_request(self):
-        return str(uuid.uuid4())
+        return random.randint(1, 999999)
 
     def get_rpc_request_body(self, args, kwargs):
         method_name = args[0]
