@@ -181,7 +181,7 @@ class TransactionBuilder:
                         sigder = array.array('B', sigder)
                         lenR = sigder[3]
                         lenS = sigder[5 + lenR]
-                        if lenR is 32 and lenS is 32:
+                        if lenR == 32 and lenS == 32:
                             i = self.recover_pubkey_parameter(
                                 self.digest, signature, sk.get_verifying_key())
                             i += 4
